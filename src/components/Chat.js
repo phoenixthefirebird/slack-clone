@@ -1,16 +1,41 @@
+import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
-import StarBorderIcon from '@material-ui/icons/StarBorder'
-import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined'
+import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined';
 import ChatInput from './ChatInput'
 import ChatMessage from './ChatMessage'
 import db from '../firebase'
 import { useParams } from 'react-router-dom'
-import {useEffect, useState} from 'react'
+import firebase from "firebase"
+function Chat({user}) {
 
-function Chat() {
 
-    let {channelId} = useParams();
-    const [channel, setChannel] = useState();
+    let { channelId } = useParams();
+    const [ channel, setChannel ] = useState();
+    const [ messages, setMessages ] = useState([]);
+    
+
+    const sendMessage = (text) => {
+        if(channelId){
+            let payload = {
+                text: text,
+                timestamp: firebase.firestore.Timestamp.now(),
+                user: user.name,
+                userImage: user.photo
+            }
+            db.collection("rooms").doc(channelId).collection('messages').add(payload);
+        }
+    }
+
+    const getMessages = () => {
+        db.collection('rooms')
+        .doc(channelId)
+        .collection('messages')
+        .orderBy('timestamp', 'asc')
+        .onSnapshot((snapshot)=>{
+            let messages = snapshot.docs.map((doc)=>doc.data());
+            setMessages(messages);
+        })
+    }
 
     const getChannel = () => {
         db.collection('rooms')
@@ -20,18 +45,18 @@ function Chat() {
         })
     }
 
-    useEffect(()=> {
+    useEffect(()=>{
         getChannel();
+        getMessages();
     }, [channelId])
 
     return (
         <Container>
             <Header>
                 <Channel>
-                    <ChannelName>
-                        # general
-                        <StarBorderIcon/>
-                    </ChannelName>
+                <ChannelName>
+                        # { channel && channel.name}
+                    </ChannelName>  
                     <ChannelInfo>
                         For general chit chat
                     </ChannelInfo>
@@ -44,24 +69,33 @@ function Chat() {
                 </ChannelDetails>
             </Header>
             <MessageContainer>
-                <ChatMessage/>
+                {
+                    messages.length > 0 && 
+                    messages.map((data, index) => (
+                        <ChatMessage
+                            text={data.text}
+                            name={data.user}
+                            image={data.userImage}
+                            timestamp={data.timestamp}
+                        />
+                    ))
+                }
             </MessageContainer>
-            <ChatInput/>
+            <ChatInput sendMessage={sendMessage}/>
         </Container>
     )
 }
 
 export default Chat
 
+
 const Container = styled.div`
     display: grid;
-    grid-template-rows: 64px auto min-content; 
-    // this styles the height of the three parts in row
+    grid-template-rows: 64px auto min-content;
+    min-height: 0;
 `
 
-const Channel = styled.div`
-
-`
+const Channel = styled.div``
 
 const ChannelDetails = styled.div`
     display: flex;
@@ -71,9 +105,6 @@ const ChannelDetails = styled.div`
 
 const ChannelName = styled.div`
     font-weight: 700;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
 `
 
 const ChannelInfo = styled.div`
@@ -82,6 +113,7 @@ const ChannelInfo = styled.div`
     font-size: 13px;
     margin-top: 8px;
 `
+
 const Info = styled(InfoOutlinedIcon)`
     margin-left: 10px;
 `
@@ -91,11 +123,13 @@ const Header = styled.div`
     padding-right: 20px;
     display: flex;
     align-items: center;
-    border-bottom: 1px solid rgba(83, 39,  83, 0.13);
+    border-bottom: 1px solid rgba(83, 39, 83,.13);
     justify-content: space-between;
-
 `
 
 const MessageContainer = styled.div`
+    display: flex;
+    flex-direction: column;
+    overflow-y: scroll;
 `
 

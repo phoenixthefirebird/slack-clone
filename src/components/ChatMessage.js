@@ -1,19 +1,19 @@
 import React from 'react'
 import styled from 'styled-components'
 
-function ChatMessage() {
+function ChatMessage({ text, name, image, timestamp }) {
     return (
         <Container>
             <UserAvatar>
-                <img src="https://media.npr.org/assets/img/2020/12/24/geminagarlandlewis_birdinglaisla-02_custom-13b6f31b7556357b7317ff22b1c9072d8a701e86-s800-c85.jpg" alt=""/>
+                <img src={image} />
             </UserAvatar>
             <MessageContent>
                 <Name>
-                    Phoenix Liu
-                    <span>3/5/2021 1:19 PM</span>
+                    {name}
+                    <span>{new Date(timestamp.toDate()).toUTCString()}</span>
                 </Name>
                 <Text>
-                    Ayyyyy
+                    {text}
                 </Text>
             </MessageContent>
         </Container>
@@ -24,14 +24,8 @@ export default ChatMessage
 
 const Container = styled.div`
     padding: 8px 20px;
-    //vertical and horizontal padding
     display: flex;
     align-items: center;
-
-    :hover{
-        background: #fafafa;
-    }
-
 `
 
 const UserAvatar = styled.div`
@@ -39,12 +33,10 @@ const UserAvatar = styled.div`
     height: 36px;
     border-radius: 2px;
     overflow: hidden;
-    margin-right: 10px;
-
+    margin-right: 8px;
 
     img {
         width: 100%;
-        height: 100%;
     }
 `
 
@@ -54,17 +46,17 @@ const MessageContent = styled.div`
 `
 
 const Name = styled.span`
-    font-weight: 700;
+    font-weight: 900;
     font-size: 15px;
     line-height: 1.4;
-    
-
     span {
         margin-left: 8px;
         font-weight: 400;
-        color: rgb(97, 96,97);
+        color: rgb(97,96,97);
         font-size: 13px;
     }
 `
 
 const Text = styled.span``
+
+
